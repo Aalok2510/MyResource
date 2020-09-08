@@ -1,7 +1,7 @@
 #!/bin/bash
 dir=/home/hack2death/Recon/$1
 shopt -s expand_aliases
-alias  httprobe=/home/hack2death/bin/./httprobe
+alias  httpx=/home/hack2death/bin/./httpx
 alias  gau=/home/hack2death/go/bin/./gau
 alias  waybackurls=/home/hack2death/go/bin/./waybackurls
 alias  gf=/home/hack2death/go/bin/./gf
