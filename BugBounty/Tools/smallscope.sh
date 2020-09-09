@@ -50,7 +50,6 @@ gf ssrf $dir/$1_final_urls | sort -u > $dir/$1_ssrf
 gf sqli $dir/$1_final_urls | sort -u > $dir/$1_sqli
 gf redirect  $dir/$1_final_urls | cut -d : -f2- | sort -u > $dir/$1_redirect
 gf rce  $dir/$1_final_urls | sort -u > $dir/$1_rce
-gf potential $dir/$1_final_urls| cut -d : -f3- | sort -u > $dir/$1_potential
 gf idor  $dir/$1_final_urls | sort  -u > $dir/$1_idor
 gf lfi  $dir/$1_final_urls | sort -u > $dir/$1_lfi
 
