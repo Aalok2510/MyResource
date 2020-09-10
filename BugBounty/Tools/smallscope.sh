@@ -21,7 +21,8 @@ echo '_________________________________________________________'
 echo  "${red} Performing : ${green} Finding Links,Broken Links and Parameter ${reset}"
 echo '---------------------------------------------------------'
 
-dir=/home/hack2death/Recon/$1
+dir=/home/hack2death/smallRecon/$1
+dir=/home/hack2death/smallRecon
 mkdir  $dir;
 v=$(echo $1 | httpx) 
 linkfinder $v >> $dir/$1_linkfinder.txt
