@@ -87,11 +87,12 @@ rm -r $dir/$1_result
 echo '______________________________________________________________________'
 echo  "${red} Performing : ${green} Directory Bruteforcing ${reset}"
 echo '----------------------------------------------------------------------'
-ffuf -mc all  -c -H "X-Forwarded-For: 127.0.0.1" -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0" -u "$v/FUZZ" -w /home/hack2death/wordlist/dicc.txt -D -e js,php,bak,txt,asp aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -ac -o $dir/$1.tmp
+ffuf -mc all -c  -w /home/hack2death/wordlist/dicc.txt  -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0" -u $v/FUZZ -D -e js,php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -t 30 -ac -o $dir/$1.temp
 
-cat $dir/$1.tmp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}'  | sed 's/\"//g' > $dir/$1_dir.txt
+cat $dir/$1.temp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}' | sed 's/\"//g' > $dir/$1_directory.txt
 
-rm -r  $dir/$1.tmp;
+rm -r  $dir/$1.temp
+
 
 echo '______________________________________________________________________'
 echo  "${red} Performing : ${green} Github Upload  ${reset}"
