@@ -91,21 +91,8 @@ ffuf -mc all -c  -w /home/hack2death/wordlist/dicc.txt  -H "User-Agent: Mozilla/
 
 cat $dir/$1.temp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}' | sed 's/\"//g' > $dir/$1_directory.txt
 
-rm -r  $dir/$1.temp
+rm -r  $dir/$1.temp;
 
-
-echo '______________________________________________________________________'
-echo  "${red} Performing : ${green} Github Upload  ${reset}"
-echo '----------------------------------------------------------------------'
-
-
-cd $dir1;
-git pull;
-git add $1;
-git commit -m "space";
-git push;
-cd  ;
-cd arsenal/;
 echo '_________________________________________________________'
 echo  "${red} Performing : ${green} Finished  ${reset}"
 echo '---------------------------------------------------------'
