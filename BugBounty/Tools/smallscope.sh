@@ -22,7 +22,6 @@ echo  "${red} Performing : ${green} Finding Links,Broken Links and Parameter ${r
 echo '---------------------------------------------------------'
 
 dir=/home/hack2death/smallRecon/$1
-dir=/home/hack2death/smallRecon
 mkdir  $dir;
 v=$(echo $1 | httpx) 
 linkfinder $v >> $dir/$1_linkfinder.txt
@@ -92,6 +91,7 @@ ffuf -mc all -c  -w /home/hack2death/wordlist/dicc.txt  -H "User-Agent: Mozilla/
 cat $dir/$1.temp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}' | sed 's/\"//g' > $dir/$1_directory.txt
 
 rm -r  $dir/$1.temp;
+find $dir -size 0 -delete;
 
 echo '_________________________________________________________'
 echo  "${red} Performing : ${green} Finished  ${reset}"
