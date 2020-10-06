@@ -11,10 +11,13 @@ alias secretfinder='python3 /home/hack2death/Tools/secretfinder/SecretFinder.py 
 alias  gau=/home/hack2death/go/bin/./gau
 alias  waybackurls=/home/hack2death/go/bin/./waybackurls
 alias  gf=/home/hack2death/go/bin/./gf
+alias  subjs=/home/hack2death/go/bin/./subjs
 alias corsy='python3 /home/hack2death/Tools/Corsy/corsy.py -t 10 -u '
 alias crlfuzz=/home/hack2death/go/bin/./crlfuzz
 alias nuclei='/home/hack2death/go/bin/./nuclei -c 200 -silent  -t /home/hack2death/Tools/nuclei-templates/ -target '
 alias ffuf=/home/hack2death/go/bin/./ffuf
+alias tok=/home/hack2death/go/bin/./tok
+alias unfurl=/home/hack2death/go/bin/./unfurl
 
 
 echo '_________________________________________________________'
@@ -33,17 +36,12 @@ rm -r $dir/$1_low.txt  $dir/$1_high.txt;
 blc  $v   >>  $dir/$1_brokenlink.txt
 
 echo '______________________________________________________________________'
-echo  "${red} Performing : ${green}  secretFinding ${reset}"
-echo '----------------------------------------------------------------------' 
-
-secretfinder $v  >  $dir/$1_secretfinder.txt;
-
-echo '______________________________________________________________________'
 echo  "${red} Performing : ${green} Finding urls and potential parameter ${reset}"
 echo '----------------------------------------------------------------------'
     
 waybackurls  -no-subs  $1 > $dir/urls;gau $1 >> $dir/urls;cat $dir/urls | sort -u > $dir/$1_final_urls;
 rm -r $dir/urls;
+
 gf xss $dir/$1_final_urls | cut -d : -f3- | sort -u > $dir/$1_xss;
 gf ssti $dir/$1_final_urls | sort -u > $dir/$1_ssti
 gf ssrf $dir/$1_final_urls | sort -u > $dir/$1_ssrf
@@ -56,6 +54,7 @@ gf lfi  $dir/$1_final_urls | sort -u > $dir/$1_lfi
 echo '______________________________________________________________________'
 echo  "${red} Performing : ${green} Service Enumeration and other Enumeration ${reset}"
 echo '----------------------------------------------------------------------'
+
 
 corsy $v >  $dir/$1_corsy;
 crlfuzz  -u  $v > $dir/$1_crlfuzz;
@@ -84,11 +83,50 @@ fi
 rm -r $dir/$1_result
 
 echo '______________________________________________________________________'
+echo  "${red} Performing : ${green}  secretFinding and Creating custom wordlist ${reset}"
+echo '----------------------------------------------------------------------' 
+
+secretfinder $v  >  $dir/$1_secretfinder.txt;
+
+
+
+cat $dir/$1_final_urls  | unfurl -u paths >> $dir/$1_path.txt
+cat $dir/$1_final_urls  | unfurl -u keys  >>  $dir/$1_wordlist
+sed 's#/#\n#g'  $dir/$1_path.txt | sort -u >> $dir/$1_wordlist
+rm -r $dir/$1_path.txt;
+cat $dir/$1_final_urls  |  subjs >> $dir/$1_abc.txt;
+cat  $dir/$1_abc.txt    |  sort -u >>  $dir/$1_allJsfile;
+rm -r $dir/$1_abc.txt;
+cat $dir/$1_allJsfile | while read p
+do 
+   curl $p >> $dir/$1_jsContent.txt;
+   secretfinder $p >> $dir/1_secretJsfinder.txt;
+done
+cat $dir/$1_jsContent | tok | tr '[:upper:]' '[:lower:]'  | sort  -u >> $dir/$1_wordlist;
+curl $v >> $dir/$1_new.html;
+cat $dir/$1_new.html | tok | tr '[:upper:]' '[:lower:]'  | sort  -u >> $dir/$1_wordlist;
+cat $dir/$1_wordlist | sort -u >> $dir/$1_Wordlist;
+rm -r $dir/$1_wordlist;
+rm -r $dir/$1_new.html;
+rm -r $dir/$1_jsContent;
+comm  -13 /home/hack2death/Tools/rfc-words $dir/$1_Wordlist  >> $dir/$1-words;
+
+echo '______________________________________________________________________'
 echo  "${red} Performing : ${green} Directory Bruteforcing ${reset}"
 echo '----------------------------------------------------------------------'
-ffuf -mc all -c  -w /home/hack2death/wordlist/dicc.txt  -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0" -u $v/FUZZ -D -e js,php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -t 30 -ac -o $dir/$1.temp
 
-cat $dir/$1.temp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}' | sed 's/\"//g' > $dir/$1_directory.txt
+ffuf -mc all -c  -w $dir/$1-words -fc 404,429 -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0" -u $v/FUZZ -D -e js,php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -t 30 -ac -o $dir/$1.Temp
+
+cat $dir/$1.Temp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}' | sed 's/\"//g' >>$dir/$1_directory.txt
+
+
+
+ffuf -mc all -c  -w /home/hack2death/wordlist/dicc.txt  -fc 404,429 -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:72.0) Gecko/20100101 Firefox/72.0" -u $v/FUZZ -D -e js,php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -t 30 -ac -o $dir/$1.temp
+
+cat $dir/$1.temp | jq '[.results[]|{status: .status, length: .length, url: .url}]' | grep -oP "status\":\s(\d{3})|length\":\s(\d{1,7})|url\":\s\"(http[s]?:\/\/.*?)\"" | paste -d' ' - - - | awk '{print $2" "$4" "$6}' | sed 's/\"//g' >> $dir/$1_directory.txt
+
+cat $dir/$1_directory.txt   | sort -u >> $dir/$1_direcTory.txt;
+rm -r $dir/$1_directory.txt;
 
 rm -r  $dir/$1.temp;
 find $dir -size 0 -delete;
