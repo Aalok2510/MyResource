@@ -9,7 +9,7 @@ echo '
 '
 echo  ' Automated with <3 by Hack2Death'
 
-dir=/home/hack2death/arsenal 
+dir=~/arsenal 
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
